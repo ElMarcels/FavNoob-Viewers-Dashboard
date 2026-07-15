@@ -21,8 +21,8 @@ const Auth = {
             State.set('accessToken', savedToken);
             State.set('user', JSON.parse(savedUser));
             State.set('isAdmin', JSON.parse(savedUser).login === CONFIG.CHANNEL);
-            this.updateUI();
         }
+        this.updateUI();
     },
 
     login() {
