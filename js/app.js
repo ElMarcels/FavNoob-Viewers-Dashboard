@@ -50,7 +50,6 @@ const App = {
             battlepass: 'Pase de Batalla',
             giveaways: 'Sorteos',
             chat: 'Chat en Vivo',
-            calendar: 'Calendario de Streams',
             polls: 'Encuestas',
             goals: 'Objetivos del Canal',
             settings: 'Configuración',
@@ -82,9 +81,6 @@ const App = {
                 content.innerHTML = Chat.render();
                 Chat.init();
                 break;
-            case 'calendar':
-                content.innerHTML = Calendar.render();
-                break;
             case 'polls':
                 content.innerHTML = Polls.render();
                 this._initPollForm();
@@ -107,7 +103,6 @@ const App = {
         const totalXP = chatters.reduce((s, c) => s + c.xp, 0);
         const totalMessages = chatters.reduce((s, c) => s + c.messages, 0);
         const topChatter = chatters.sort((a, b) => b.xp - a.xp)[0];
-        const nextStreams = State.getStreamDaysLeft();
         const activeGiveaways = (State.get('giveaways') || []).filter(g => g.active);
         const activePolls = (State.get('polls') || []).filter(p => p.active);
         const goals = State.get('goals') || [];
@@ -150,18 +145,6 @@ const App = {
             </div>
 
             <div class="dashboard-grid">
-                <div class="card">
-                    <div class="card-header"><h3>📅 Próximo Stream</h3></div>
-                    ${nextStreams.length > 0 ? `
-                        <div class="dash-stream">
-                            <div class="dash-stream-info">
-                                <strong>${nextStreams[0].title}</strong>
-                                <span>${DAYS_ES[nextStreams[0].day]} ${nextStreams[0].time}</span>
-                            </div>
-                        </div>
-                    ` : '<div class="empty-state-small">Sin streams programados</div>'}
-                </div>
-
                 <div class="card">
                     <div class="card-header"><h3>🏆 Top 5 Chatters</h3></div>
                     <div class="dash-top-list">
@@ -394,19 +377,6 @@ const App = {
             Giveaways.updateTimers();
             Polls.updateTimers();
         }, 10000);
-
-        this.countdownInterval = setInterval(() => {
-            if (this.currentPage === 'calendar') {
-                const countdownEl = document.getElementById('nextStreamCountdown');
-                if (countdownEl) {
-                    const nextStreams = State.getStreamDaysLeft();
-                    if (nextStreams.length > 0) {
-                        const m = nextStreams[0].minutesUntil;
-                        countdownEl.textContent = m < 60 ? `En ${m} minutos` : `En ${Math.floor(m / 60)}h ${m % 60}m`;
-                    }
-                }
-            }
-        }, 60000);
 
         setInterval(() => {
             this._updateStreamStatus();

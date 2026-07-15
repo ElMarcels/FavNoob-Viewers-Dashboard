@@ -113,13 +113,24 @@ const BattlePass = {
         }));
         rewards.sort((a, b) => a.tier - b.tier);
 
+        const typeColors = {
+            emote: 'var(--primary)',
+            badge: 'var(--accent)',
+            vip: 'var(--info)',
+            sub: 'var(--success)',
+            mention: 'var(--warning)',
+            vip_permanent: 'var(--gold)',
+        };
+
         return `
             <div class="rewards-scroll">
                 ${rewards.map(r => `
-                    <div class="reward-node ${currentTier >= r.tier ? 'unlocked' : 'locked'}">
+                    <div class="reward-node ${currentTier >= r.tier ? 'unlocked' : 'locked'}" style="--reward-color: ${typeColors[r.type] || 'var(--primary)'}">
                         <div class="reward-tier">${r.tier}</div>
                         <div class="reward-icon">${r.icon}</div>
                         <div class="reward-name">${r.name}</div>
+                        <div class="reward-desc">${r.description || ''}</div>
+                        ${r.type ? `<div class="reward-type-badge">${r.type.replace('_', ' ')}</div>` : ''}
                         ${currentTier >= r.tier ? '<div class="reward-check">✅</div>' : ''}
                     </div>
                 `).join('')}
