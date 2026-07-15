@@ -1,7 +1,7 @@
 const CONFIG = {
     CHANNEL: 'favnooob',
     CHANNEL_ID: '',
-    CLIENT_ID: '',
+    CLIENT_ID: '8n2q42elv8wzd9ogx9o4ebkgbf2dae',
     REDIRECT_URI: window.location.origin + window.location.pathname,
     TMI_USERNAME: 'justinfan' + Math.floor(Math.random() * 99999),
     
