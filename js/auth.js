@@ -47,7 +47,7 @@ const Auth = {
             return;
         }
 
-        const scopes = ['chat:read', 'channel:read:subscriptions', 'channel:read:redemptions', 'user:read:follows'];
+        const scopes = ['chat:read', 'chat:edit', 'channel:read:subscriptions', 'channel:read:redemptions', 'user:read:follows'];
         const url = `https://id.twitch.tv/oauth2/authorize?client_id=${CONFIG.CLIENT_ID}&redirect_uri=${encodeURIComponent(CONFIG.REDIRECT_URI)}&response_type=token&scope=${scopes.join('+')}`;
         window.location.href = url;
     },

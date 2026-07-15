@@ -103,11 +103,23 @@ const Chat = {
             return;
         }
 
-        this.client = new tmi.Client({
+        const user = State.get('user');
+        const token = State.get('accessToken');
+
+        const clientOptions = {
             options: { debug: false },
             connection: { reconnect: true, secure: true },
             channels: [channel],
-        });
+        };
+
+        if (user && token) {
+            clientOptions.identity = {
+                username: user.login,
+                password: `oauth:${token}`,
+            };
+        }
+
+        this.client = new tmi.Client(clientOptions);
 
         this.client.connect().then(() => {
             this.connected = true;
@@ -296,6 +308,11 @@ const Chat = {
         if (!this.connected || !this.client) return;
         const input = document.getElementById('chatInput');
         if (!input || !input.value.trim()) return;
+
+        if (!State.get('user')) {
+            Utils.showToast('Inicia sesión con Twitch para enviar mensajes', 'warning');
+            return;
+        }
 
         this.client.say(CONFIG.CHANNEL, input.value.trim());
         input.value = '';
