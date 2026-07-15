@@ -121,13 +121,26 @@ const Chat = {
 
         this.client = new tmi.Client(clientOptions);
 
+        this.client.on('error', (err) => {
+            console.error('[Chat] TMI error:', err);
+        });
+
+        this.client.on('notice', (channel, msgid, message) => {
+            console.log('[Chat] Notice:', msgid, message);
+            if (msgid === 'login_unauthorized' || msgid === 'msg_channel_suspended') {
+                Utils.showToast('Error de autenticación en el chat: ' + message, 'error', 5000);
+            }
+        });
+
         this.client.connect().then(() => {
             this.connected = true;
             this.updateConnectionUI(true);
-            Utils.showToast(`Conectado al chat de ${channel}`, 'success');
+            const authStatus = user && token ? ' (autenticado como ' + user.display_name + ')' : ' (anónimo)';
+            Utils.showToast(`Conectado al chat de ${channel}${authStatus}`, 'success');
+            console.log('[Chat] Conectado' + authStatus, user ? 'Token: ' + token.substring(0, 10) + '...' : '');
         }).catch(err => {
             console.error('TMI connection error:', err);
-            Utils.showToast('Error al conectar al chat', 'error');
+            Utils.showToast('Error al conectar al chat: ' + err.message, 'error');
         });
 
         this.client.on('message', (channel, tags, message, self) => {
@@ -314,8 +327,30 @@ const Chat = {
             return;
         }
 
-        this.client.say(CONFIG.CHANNEL, input.value.trim());
+        const message = input.value.trim();
         input.value = '';
+
+        this.client.say(CONFIG.CHANNEL, message).then(() => {
+            this._addLocalMessage(State.get('user').display_name, message);
+        }).catch(err => {
+            console.error('Error sending message:', err);
+            Utils.showToast('Error al enviar mensaje: ' + (err.message || err), 'error');
+            this._addLocalMessage(State.get('user').display_name, message);
+        });
+    },
+
+    _addLocalMessage(username, message) {
+        const container = document.getElementById('chatMessages');
+        if (!container) return;
+
+        const welcome = container.querySelector('.chat-welcome');
+        if (welcome) welcome.remove();
+
+        const el = document.createElement('div');
+        el.className = 'chat-message local-message';
+        el.innerHTML = `<span class="msg-name" style="color:var(--primary-light)">${Utils.escapeHtml(username)}</span><span class="msg-colon">: </span><span class="msg-text">${Utils.escapeHtml(message)}</span>`;
+        container.appendChild(el);
+        this.autoScroll(container);
     },
 
     toggleAutoScroll() {
