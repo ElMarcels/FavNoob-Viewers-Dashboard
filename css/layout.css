@@ -124,6 +124,14 @@
     animation: pulse 2s infinite;
 }
 
+.sidebar-credit {
+    margin-top: 10px;
+    text-align: center;
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    opacity: 0.6;
+}
+
 @keyframes pulse {
     0%, 100% { opacity: 1; }
     50% { opacity: 0.5; }
