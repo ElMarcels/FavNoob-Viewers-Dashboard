@@ -20,7 +20,7 @@ const Auth = {
         if (savedToken && savedUser) {
             State.set('accessToken', savedToken);
             State.set('user', JSON.parse(savedUser));
-            State.set('isAdmin', JSON.parse(savedUser).login === CONFIG.CHANNEL);
+            State.set('isAdmin', CONFIG.ADMIN_USERS.includes(JSON.parse(savedUser).login));
         }
         this.updateUI();
     },
@@ -83,7 +83,7 @@ const Auth = {
                 localStorage.setItem(this.USER_KEY, JSON.stringify(userData));
                 State.set('accessToken', token);
                 State.set('user', userData);
-                State.set('isAdmin', user.login === CONFIG.CHANNEL);
+                State.set('isAdmin', CONFIG.ADMIN_USERS.includes(user.login));
                 Utils.showToast(`Bienvenido, ${user.display_name}!`, 'success');
                 this.updateUI();
                 App.refreshCurrentPage();
