@@ -50,7 +50,6 @@ const App = {
             battlepass: 'Pase de Batalla',
             giveaways: 'Sorteos',
             chat: 'Chat en Vivo',
-            polls: 'Encuestas',
             goals: 'Objetivos del Canal',
             settings: 'Configuración',
         };
@@ -81,10 +80,6 @@ const App = {
                 content.innerHTML = Chat.render();
                 Chat.init();
                 break;
-            case 'polls':
-                content.innerHTML = Polls.render();
-                this._initPollForm();
-                break;
             case 'goals':
                 content.innerHTML = Goals.render();
                 this._initGoalForm();
@@ -104,7 +99,6 @@ const App = {
         const totalMessages = chatters.reduce((s, c) => s + c.messages, 0);
         const topChatter = chatters.sort((a, b) => b.xp - a.xp)[0];
         const activeGiveaways = (State.get('giveaways') || []).filter(g => g.active);
-        const activePolls = (State.get('polls') || []).filter(p => p.active);
         const goals = State.get('goals') || [];
 
         return `
@@ -190,17 +184,6 @@ const App = {
                             <div class="dash-mini-item">
                                 <span>🎁</span><span>${Utils.escapeHtml(g.prize)}</span>
                                 <span class="dash-mini-count">${(g.participants || []).length} participantes</span>
-                            </div>
-                        `).join('')}
-                    </div>
-                ` : ''}
-
-                ${activePolls.length > 0 ? `
-                    <div class="card">
-                        <div class="card-header"><h3>🗳️ Encuestas Activas</h3></div>
-                        ${activePolls.map(p => `
-                            <div class="dash-mini-item">
-                                <span>🗳️</span><span>${Utils.escapeHtml(p.question)}</span>
                             </div>
                         `).join('')}
                     </div>
@@ -338,21 +321,6 @@ const App = {
         }
     },
 
-    _initPollForm() {
-        const form = document.getElementById('pollForm');
-        if (form) {
-            form.onsubmit = (e) => {
-                e.preventDefault();
-                Polls.create(
-                    document.getElementById('pollQuestion').value,
-                    document.getElementById('pollOptions').value,
-                    parseInt(document.getElementById('pollDuration').value),
-                    document.getElementById('pollMultiVote').value === 'true'
-                );
-            };
-        }
-    },
-
     _initGoalForm() {
         const form = document.getElementById('goalForm');
         if (form) {
@@ -375,7 +343,6 @@ const App = {
     startTimers() {
         this.timerInterval = setInterval(() => {
             Giveaways.updateTimers();
-            Polls.updateTimers();
         }, 10000);
 
         setInterval(() => {
