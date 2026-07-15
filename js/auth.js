@@ -84,14 +84,33 @@ const Auth = {
                 State.set('accessToken', token);
                 State.set('user', userData);
                 State.set('isAdmin', user.login === CONFIG.CHANNEL);
-                CONFIG.CHANNEL_ID = user.id;
                 Utils.showToast(`Bienvenido, ${user.display_name}!`, 'success');
                 this.updateUI();
                 App.refreshCurrentPage();
+                this._resolveChannelId(token);
             }
         } catch (e) {
             console.error('Error fetching user:', e);
             Utils.showToast('Error al obtener datos de Twitch', 'error');
+        }
+    },
+
+    async _resolveChannelId(token) {
+        try {
+            const res = await fetch(`https://api.twitch.tv/helix/users?login=${CONFIG.CHANNEL}`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Client-Id': CONFIG.CLIENT_ID,
+                }
+            });
+            if (!res.ok) return;
+            const data = await res.json();
+            if (data.data && data.data[0]) {
+                CONFIG.CHANNEL_ID = data.data[0].id;
+                App._updateStreamStatus();
+            }
+        } catch (e) {
+            console.warn('Error resolving channel ID:', e);
         }
     },
 

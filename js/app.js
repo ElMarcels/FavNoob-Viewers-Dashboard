@@ -347,10 +347,69 @@ const App = {
 
         setInterval(() => {
             this._updateStreamStatus();
-        }, 300000);
+        }, 60000);
     },
 
     _updateStreamStatus() {
+        const el = document.getElementById('streamStatus');
+        if (!el) return;
+
+        const token = State.get('accessToken');
+        if (token && CONFIG.CHANNEL_ID) {
+            this._checkStreamStatus(token);
+        } else if (token && !CONFIG.CHANNEL_ID) {
+            this._resolveChannelId(token).then(() => {
+                if (CONFIG.CHANNEL_ID) this._checkStreamStatus(token);
+                else this._updateStreamStatusFallback();
+            });
+        } else {
+            this._updateStreamStatusFallback();
+        }
+    },
+
+    async _resolveChannelId(token) {
+        try {
+            const res = await fetch(`https://api.twitch.tv/helix/users?login=${CONFIG.CHANNEL}`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Client-Id': CONFIG.CLIENT_ID,
+                }
+            });
+            if (!res.ok) return;
+            const data = await res.json();
+            if (data.data && data.data[0]) {
+                CONFIG.CHANNEL_ID = data.data[0].id;
+            }
+        } catch (e) {
+            console.warn('Error resolving channel ID:', e);
+        }
+    },
+
+    async _checkStreamStatus(token) {
+        const el = document.getElementById('streamStatus');
+        if (!el) return;
+
+        try {
+            const res = await fetch(`https://api.twitch.tv/helix/streams?user_id=${CONFIG.CHANNEL_ID}`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Client-Id': CONFIG.CLIENT_ID,
+                }
+            });
+            if (!res.ok) throw new Error('API error');
+            const data = await res.json();
+            if (data.data && data.data.length > 0) {
+                el.innerHTML = '<span class="status-dot online"></span><span class="status-text">En Vivo</span>';
+            } else {
+                el.innerHTML = '<span class="status-dot offline"></span><span class="status-text">Offline</span>';
+            }
+        } catch (e) {
+            console.warn('Error checking stream status:', e);
+            this._updateStreamStatusFallback();
+        }
+    },
+
+    _updateStreamStatusFallback() {
         const el = document.getElementById('streamStatus');
         if (!el) return;
 
